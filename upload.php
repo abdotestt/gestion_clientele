@@ -1,4 +1,9 @@
 <?php
+require_once './controllers/user.php';
+
+$pdo = Database::getConnection(); // Get the PDO connection
+ 
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_FILES['csvFile']) && $_FILES['csvFile']['error'] == 0) {
         $fileTmpPath = $_FILES['csvFile']['tmp_name'];
@@ -10,16 +15,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Check if the uploaded file is a CSV
         if ($fileExtension === 'csv') {
-            // Specify the upload directory
-            $uploadFileDir = 'C:\xampp\htdocs\gestion_clientele_php\views';
+            $uploadFileDir = 'C:\xampp\htdocs\gestion_clientele_php\views\/';
             $dest_path = $uploadFileDir . $fileName;
 
-            // Move the file to the upload directory
             if (move_uploaded_file($fileTmpPath, $dest_path)) {
                 echo "File is successfully uploaded.\n";
-                // Now you can read and process the CSV file
-                processCSV($dest_path);
-            } else {
+                if (($handle = fopen($dest_path, "r")) !== FALSE) {
+                    $header = fgetcsv($handle, 1000, ",");
+                    $rowCount = 0;
+                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                        $name = $data[0];
+                        $email = $data[1];
+                        $phone = $data[2];
+                        $statut = $data[3];
+
+                        // Insert the data into the database
+                        $sql = "INSERT INTO clients (name, email, phone, statut) VALUES (?, ?, ?, ?)";
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute([$name, $email, $phone, $statut]);
+                        $rowCount++;
+                    }
+                    fclose($handle);
+                    Header('Location: index.php');
+                    Exit();
+                                } else {
+                    echo "Error opening the file.<br>";
+                }            } else {
                 echo "There was an error moving the uploaded file.\n";
             }
         } else {

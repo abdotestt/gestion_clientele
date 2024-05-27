@@ -12,47 +12,57 @@
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         }
-        public function get_event_by_id($event_id){
-            return "$event_id";
+        public function get_client_by_id($client_id){
+            return "$client_id";
         }
-        public function add_event($event_data){
+        public function add_client($client_data){
             $fields = ['titre', 'date', 'lieu', 'heure', 'image', 'description','prix'];
             $sanitized_data = [];
             foreach ($fields as $field) {
-                if (isset($event_data[$field])) {
-                    $sanitized_data[$field] = htmlspecialchars(trim($event_data[$field]), ENT_QUOTES, 'UTF-8');
+                if (isset($client_data[$field])) {
+                    $sanitized_data[$field] = htmlspecialchars(trim($client_data[$field]), ENT_QUOTES, 'UTF-8');
                 } else {
                     $sanitized_data[$field] = null;
                 }
             }
-            $sql = "INSERT INTO events (titre, date, lieu, heure, image ,description,prix) 
+            $sql = "INSERT INTO clients (titre, date, lieu, heure, image ,description,prix) 
                     VALUES (:titre, :date, :lieu, :heure, :image ,:description,:prix )";
             $stmt = $this->pdo->prepare($sql);
              $stmt->execute($sanitized_data);
              Header('Location: '.$_SERVER['PHP_SELF']);
                 Exit();
-                            // print_r($event_data);
+                            // print_r($client_data);
         }
         
-        public function update_event($event_id, $event_data){
-            $sql = "UPDATE events SET 
-                        titre = :titre, 
-                        date = :date, 
-                        lieu = :lieu, 
-                        heure = :heure, 
-                        image = :image, 
-                        description = :description,
-                        prix = :prix
-                      
-                    WHERE id = :id";
-            $event_data['id'] = $event_id;
+        public function update_client($client_id, $client_data){
+            $fields = ['name', 'email', 'phone', 'statut'];
+            $sanitized_data = [];
+            foreach ($fields as $field) {
+                if (isset($client_data[$field])) {
+                    $sanitized_data[$field] = htmlspecialchars(trim($client_data[$field]), ENT_QUOTES, 'UTF-8');
+                } else {
+                    $sanitized_data[$field] = null;
+                }
+            }
+            $sql = "UPDATE clients SET 
+                        name = :name, 
+                        email = :email, 
+                        phone = :phone, 
+                        statut = :statut 
+                    WHERE id = $client_id";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute($event_data);
+            $stmt->execute($sanitized_data);
+            Header('Location: '.$_SERVER['PHP_SELF']);
+                Exit();
         }
+        
     
-        public function delete_event($event_id){
-            $sql = "DELETE FROM events WHERE id = :id";
+        public function delete_client($client_id){
+            $sql = "DELETE FROM clients WHERE id = :id";
             $stmt = $this->pdo->prepare($sql);
-            return $stmt->execute(array(':id' => $event_id));
+            $stmt->execute(array(':id' => $client_id));
+            Header('Location: '.$_SERVER['PHP_SELF']);
+                Exit();
+            
         }
     }
